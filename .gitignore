@@ -1,0 +1,4 @@
+/dotnet-cc/mod_export
+/dotnet-cc/out
+*.wat
+
