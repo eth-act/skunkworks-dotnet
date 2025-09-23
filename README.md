@@ -92,11 +92,11 @@ zisk/core/src/mem.rs
 ### dotnet 10
 
 Currently there's only a release candidate with the full release scheduled end of 2025.
-Since it's an LTS release, support will be present until end of 2028.
+It's also an LTS release and supported until end of 2028.
 
 https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
 
-Also it includes various performance improvements compared to previous versions.
+Additionally it includes various performance improvements compared to previous versions.
 
 https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-10/
 
@@ -113,6 +113,7 @@ But generally it might make sense to limit dependencies.
 #### Official tools
 
 https://github.com/bytecodealliance/wasm-tools
+
 https://github.com/WebAssembly/wabt
 
 ### Microsoft.DotNet.ILCompiler
@@ -130,11 +131,15 @@ Also it should be mentioned that there is the somewhat similar Blazor Project ta
 WebAssembly. Should Microsoft drop the Native AOT LLVM experiment it may be possible to use Blazor for
 compilation with extra steps.
 
+https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor
+
 ### w2c2
 
 w2c2 is in active development and usage. Also there are blog articles about it and various forks.
 
 While supporting WASM and WASI, WASM 2.0/wasip2 modules are extracted in a separate build step.
+
+https://github.com/turbolent/w2c2
 
 ## Current Limitations
 
