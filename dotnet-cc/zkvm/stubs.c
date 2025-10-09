@@ -1,6 +1,5 @@
 #include "w2c2_base.h"
 #include "mod0.h"
-#include "wasi_snapshot_preview1.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -209,10 +208,10 @@ github.com/WebAssembly/wasi-libc/blob/main/libc-bottom-half/sources/wasip2.c
 */
 void wasm_import_streams_method_output_stream_blocking_write_and_flush(void* instance, U32 self___handle, U32 contents_ptr, U32 contents_len, U32 ptr) {
 	printf("wasm_import_streams_method_output_stream_blocking_write_and_flush(%p, self___handle=%d, contents_ptr=%d, contents_len=%d, ptr=%d)\n", instance, self___handle, contents_ptr, contents_len, ptr);
-	wasisnapshotpreview1Instance* i1 = (wasisnapshotpreview1Instance*)instance;
+	unbundledmodule0Instance* i1 = (unbundledmodule0Instance*)instance;
 	printf("write-and-flush: ");
 	for (U32 i = 0; i < contents_len; i++) {
-		U8 ch = i32_load8_u(i1->env__memory, (U64)(contents_ptr+i));
+		U8 ch = i32_load8_u(i1->m0, (U64)(contents_ptr+i));
 		if (ch != 0) {
 			printf("%c", ch);
 		} else {
@@ -248,10 +247,11 @@ void wasisnapshotpreview1_wasiX3ArandomX2FrandomX400X2E2X2E0__getX2DrandomX2Dbyt
 
 /* wasip1 */
 
-U32 wasisnapshotpreview1_random_get(wasisnapshotpreview1Instance* i1, U32 buf_ptr, U32 buf_len) {
+U32 wasisnapshotpreview1_random_get(void* instance, U32 buf_ptr, U32 buf_len) {
+  unbundledmodule0Instance* i1 = (unbundledmodule0Instance*)instance;
   printf("wasisnapshotpreview1_random_get(%p, buf_ptr=%d, buf_len=%d)\n", i1, buf_ptr, buf_len);
   for (U32 i = 0; i < buf_len; i++) {
-	i32_store8(i1->env__memory, (U64)(buf_ptr+i), (U8)i);
+	i32_store8(i1->m0, (U64)(buf_ptr+i), (U8)i);
   }
   return 0;
 }

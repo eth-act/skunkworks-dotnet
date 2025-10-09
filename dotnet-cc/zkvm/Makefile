@@ -24,7 +24,7 @@ firmware.zkvm.elf: $(OBJS_ZKVM) riscv64ima_zisk_zkvm_elf_linker_script.ld
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) firmware.elf firmware.zkvm.elf qemu_debug.log
+	rm -f $(OBJS) firmware.elf firmware.zkvm.elf qemu_debug.log *.o
 
 debug_zkvm: firmware.zkvm.elf
 	ziskemu -e ./firmware.zkvm.elf

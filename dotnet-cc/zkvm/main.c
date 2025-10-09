@@ -73,12 +73,8 @@ int main(void) {
 	}
 
 	unbundledmodule0Instance instance0;
-	wasisnapshotpreview1Instance instance1;
 
 	unbundledmodule0Instantiate(&instance0, NULL);
-
-	instance0.wasip1i = &instance1;
-	instance1.env__memory = instance0.m0;
 
 	//unbundledmodule0_NativeLibrary_Triple(&instance0, 11);
 

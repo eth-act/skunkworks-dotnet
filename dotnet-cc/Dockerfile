@@ -108,17 +108,19 @@ RUN gcc -g -c custom_imports.c
 
 WORKDIR /runtimelab/samples/NativeLibrary
 RUN w2c2 -p -m mod/unbundled-module0.wasm mod/mod0.c
-RUN w2c2 -p -m mod/wasi_snapshot_preview1.wasm mod/wasi_snapshot_preview1.c
 WORKDIR /runtimelab/samples/NativeLibrary/mod
 COPY patch_code.sh /runtimelab/samples/NativeLibrary/patch_code.sh
 RUN ../patch_code.sh
 RUN touch /runtimelab/samples/NativeLibrary/mod/custom_shims.h
 RUN gcc -g -c mod0.c -D AMD64 -I/w2c2/w2c2
-RUN gcc -g -c wasi_snapshot_preview1.c -D AMD64 -I/w2c2/w2c2
+COPY amd64/addon.c /runtimelab/samples/NativeLibrary/mod/addon.c
 COPY amd64/main.c /runtimelab/samples/NativeLibrary/mod/main.c
+COPY zkvm/wasi.c /runtimelab/samples/NativeLibrary/mod/wasi.c
 COPY zkvm/stubs.c /runtimelab/samples/NativeLibrary/mod/stubs.c
+RUN gcc -g -c addon.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
 RUN gcc -g -c stubs.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
 RUN gcc -g -c main.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
+RUN gcc -g -c wasi.c -D AMD64 -I/w2c2/w2c2
 WORKDIR /runtimelab/samples/NativeLibrary
 COPY amd64/cc.sh /runtimelab/samples/NativeLibrary/cc.sh
 
