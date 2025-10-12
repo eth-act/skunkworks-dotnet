@@ -76,9 +76,9 @@ int main(void) {
 
 	unbundledmodule0Instantiate(&instance0, NULL);
 
-	//unbundledmodule0_NativeLibrary_Triple(&instance0, 11);
+	//unbundledmodule0_Example_Triple(&instance0, 11);
 
-	int y = unbundledmodule0_NativeLibrary_NextPrime(&instance0, 32);
+	int y = unbundledmodule0_Example_NextPrime(&instance0, 32);
 	printf("NextPrime(32)=%d\n\n\n", y);
 
 	printf("read input values...\n");
@@ -89,7 +89,7 @@ int main(void) {
 	}
 	printf("\n\n\n");
 
-	unbundledmodule0_NativeLibrary_TestCallingHostFunc(&instance0);
+	unbundledmodule0_Example_TestCallingHostFunc(&instance0);
 
 	unbundledmodule0FreeInstance(&instance0);
 

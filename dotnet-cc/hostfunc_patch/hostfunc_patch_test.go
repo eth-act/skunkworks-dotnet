@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-const testIn = `(module $NativeLibrary.wasm
+const testIn = `(module $Example.wasm
   (type (;0;) (func (param i32)))
   (type (;1;) (func (param i32) (result i32)))
   (type (;2;) (func (param i32 i32 i32)))
   (type (;3;) (func (param i32 i32)))
   (import "wasi_snapshot_preview1" "environ_get" (func $__imported_wasi_snapshot_preview1_environ_get (type 7)))
   (import "wasi_snapshot_preview1" "environ_sizes_get" (func $__imported_wasi_snapshot_preview1_environ_sizes_get (type 7)))
-  (func $NativeLibrary_NativeLibrary_NativeLibrary__hostFuncCallback (type 2) (param i32 i32 i32)
+  (func $Example_Example_Example__hostFuncCallback (type 2) (param i32 i32 i32)
     local.get 0
     i32.const 490259
     i32.store

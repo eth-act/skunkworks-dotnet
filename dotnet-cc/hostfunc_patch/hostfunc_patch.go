@@ -84,11 +84,11 @@ func Main(in, out string, funs []string) (err error) {
 
 		if i == 0 {
 			for fun, param := range params {
-				fmt.Fprintf(w, "(import \"customImports\" \"%s\" (func $NativeLibrary_NativeLibrary_NativeLibrary__%sOverwrite (param %s)))\n", fun, fun, param)
+				fmt.Fprintf(w, "(import \"customImports\" \"%s\" (func $Example_Example_Example__%sOverwrite (param %s)))\n", fun, fun, param)
 			}
 		} else if !exportMemoryMatched && strings.Contains(t, exportMemoryMatch) {
 			for fun := range params {
-				fmt.Fprintf(w, "(export \"NativeLibrary_%s\" (func $NativeLibrary_NativeLibrary_NativeLibrary__%s))\n", fun, fun)
+				fmt.Fprintf(w, "(export \"Example_%s\" (func $Example_Example_Example__%s))\n", fun, fun)
 			}
 		}
 
@@ -104,8 +104,8 @@ func Main(in, out string, funs []string) (err error) {
 
 func writeText(w *bufio.Writer, t string, funs []string) (err error) {
 	for _, fun := range funs {
-		if strings.Contains(t, "call $NativeLibrary_NativeLibrary_NativeLibrary__"+fun) {
-			t = strings.Replace(t, "call $NativeLibrary_NativeLibrary_NativeLibrary__"+fun, "call $NativeLibrary_NativeLibrary_NativeLibrary__"+fun+"Overwrite", 1)
+		if strings.Contains(t, "call $Example_Example_Example__"+fun) {
+			t = strings.Replace(t, "call $Example_Example_Example__"+fun, "call $Example_Example_Example__"+fun+"Overwrite", 1)
 		}
 	}
 	if _, err = w.WriteString(t+"\n"); err != nil {

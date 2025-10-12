@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace NativeLibrary
+namespace Example
 {
     public class TestCode {
         public bool IsPrime(int number) {
@@ -20,15 +20,15 @@ namespace NativeLibrary
         }
     }
 
-    public unsafe class NativeLibrary
+    public unsafe class Example
     {
-        [UnmanagedCallersOnly(EntryPoint = "NativeLibrary_Free")]
+        [UnmanagedCallersOnly(EntryPoint = "Example_Free")]
         public static void Free(void* p)
         {
             NativeMemory.Free(p);
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "NativeLibrary_Triple")]
+        [UnmanagedCallersOnly(EntryPoint = "Example_Triple")]
         public static int Triple(int x)
         {
             Console.WriteLine("Triple()");
@@ -41,7 +41,7 @@ namespace NativeLibrary
         [DllImport("mylib.dll")]
         private static unsafe extern void printk(int a);
 
-        [UnmanagedCallersOnly(EntryPoint = "NativeLibrary_NextPrime")]
+        [UnmanagedCallersOnly(EntryPoint = "Example_NextPrime")]
         public static int NextPrime(int x)
         {
             Console.WriteLine($"NextPrime({x})");
@@ -56,7 +56,7 @@ namespace NativeLibrary
             return 0;
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "NativeLibrary_TestCallingHostFunc")]
+        [UnmanagedCallersOnly(EntryPoint = "Example_TestCallingHostFunc")]
         public static void TestCallingHostFunc()
         {
             Console.WriteLine("TestCallingHostFunc()\n");
@@ -65,7 +65,7 @@ namespace NativeLibrary
             hostFuncCallback(0x456000, 0x789);
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "NativeLibrary_CalculateHash")]
+        [UnmanagedCallersOnly(EntryPoint = "Example_CalculateHash")]
         public static void CalculateHash()
         {
             Console.WriteLine("get bytes:");

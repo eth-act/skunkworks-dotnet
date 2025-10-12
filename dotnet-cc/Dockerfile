@@ -23,8 +23,8 @@ ENV WASI_SDK_PATH=/wasi-sdk-25.0-x86_64-linux
 WORKDIR /
 RUN mkdir /dotnet10
 WORKDIR /dotnet10
-RUN wget https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.100-preview.6.25358.103/dotnet-sdk-10.0.100-preview.6.25358.103-linux-x64.tar.gz
-RUN tar xf dotnet-sdk-10.0.100-preview.6.25358.103-linux-x64.tar.gz
+RUN wget https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.100-rc.1.25451.107/dotnet-sdk-10.0.100-rc.1.25451.107-linux-x64.tar.gz
+RUN tar xf dotnet-sdk-10.0.100-rc.1.25451.107-linux-x64.tar.gz
 RUN ls /dotnet10
 
 
@@ -81,52 +81,54 @@ RUN cargo build
 ### C# to wasm conversion ###
 
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-WORKDIR /runtimelab/samples/NativeLibrary
-COPY NativeLibrary.cs /runtimelab/samples/NativeLibrary/NativeLibrary.cs
-COPY NativeLibrary.csproj /runtimelab/samples/NativeLibrary/NativeLibrary.csproj
-COPY hostfunc.c /runtimelab/samples/NativeLibrary/hostfunc.c
+RUN mkdir /example
+COPY nuget.pem /etc/pki/ca-trust/source/anchors/nuget.pem
+RUN update-ca-trust extract
+COPY nuget.config /example/nuget.config
+COPY Example.cs /example/Example.cs
+COPY Example.csproj /example/Example.csproj
+WORKDIR /example
+COPY hostfunc.c /example/hostfunc.c
 RUN /wasi-sdk-25.0-x86_64-linux/bin/wasm32-wasi-clang -static -o mylib.dll hostfunc.c
 RUN /dotnet10/dotnet publish -r wasi-wasm
-RUN wasm-tools component unbundle --module-dir mod --output NativeLibrary.unbundled.wasm bin/Release/net10.0/wasi-wasm/publish/NativeLibrary.wasm
+RUN wasm-tools component unbundle --module-dir mod --output Example.unbundled.wasm bin/Release/net10.0/wasi-wasm/publish/Example.wasm
 RUN mv mod/unbundled-module1.wasm mod/wasi_snapshot_preview1.wasm
 
 
 ### Hostfunc import
 
-RUN mkdir -p /runtimelab/samples/NativeLibrary/hostfunc_patch
-COPY ./hostfunc_patch.sh /runtimelab/samples/NativeLibrary/hostfunc_patch.sh
-COPY ./hostfunc_patch/hostfunc_patch.go /runtimelab/samples/NativeLibrary/hostfunc_patch/hostfunc_patch.go
+RUN mkdir -p /example/hostfunc_patch
+COPY ./hostfunc_patch.sh /example/hostfunc_patch.sh
+COPY ./hostfunc_patch/hostfunc_patch.go /example/hostfunc_patch/hostfunc_patch.go
 RUN cp mod/unbundled-module0.wasm mod/unbundled-module0-unpatched.wasm
 RUN /wabt/bin/wasm2wat mod/unbundled-module0.wasm > mod/unbundled-module0-patched.wat
-RUN ./hostfunc_patch.sh /runtimelab/samples/NativeLibrary/hostfunc_patch.sh
-WORKDIR /runtimelab/samples/NativeLibrary/mod
-COPY amd64/custom_imports.c /runtimelab/samples/NativeLibrary/mod/custom_imports.c
+RUN ./hostfunc_patch.sh /example/hostfunc_patch.sh
+WORKDIR /example/mod
+COPY amd64/custom_imports.c /example/mod/custom_imports.c
 RUN gcc -g -c custom_imports.c
 
 
 ### wasm to C conversion ###
 
-WORKDIR /runtimelab/samples/NativeLibrary
+WORKDIR /example
 RUN w2c2 -p -m mod/unbundled-module0.wasm mod/mod0.c
-WORKDIR /runtimelab/samples/NativeLibrary/mod
-COPY patch_code.sh /runtimelab/samples/NativeLibrary/patch_code.sh
-RUN ../patch_code.sh
-RUN touch /runtimelab/samples/NativeLibrary/mod/custom_shims.h
-RUN gcc -g -c mod0.c -D AMD64 -I/w2c2/w2c2
-COPY amd64/addon.c /runtimelab/samples/NativeLibrary/mod/addon.c
-COPY amd64/main.c /runtimelab/samples/NativeLibrary/mod/main.c
-COPY zkvm/wasi.c /runtimelab/samples/NativeLibrary/mod/wasi.c
-COPY zkvm/stubs.c /runtimelab/samples/NativeLibrary/mod/stubs.c
+WORKDIR /example/mod
+COPY zkvm/custom_shims.h /example/mod/custom_shims.h
+RUN gcc -g -include custom_shims.h -c mod0.c -D AMD64 -I/w2c2/w2c2
+COPY amd64/addon.c /example/mod/addon.c
+COPY amd64/main.c /example/mod/main.c
+COPY zkvm/wasi.c /example/mod/wasi.c
+COPY zkvm/stubs.c /example/mod/stubs.c
 RUN gcc -g -c addon.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
 RUN gcc -g -c stubs.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
 RUN gcc -g -c main.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
 RUN gcc -g -c wasi.c -D AMD64 -I/w2c2/w2c2
-WORKDIR /runtimelab/samples/NativeLibrary
-COPY amd64/cc.sh /runtimelab/samples/NativeLibrary/cc.sh
+WORKDIR /example
+COPY amd64/cc.sh /example/cc.sh
 
 
-RUN mkdir /runtimelab/samples/NativeLibrary/out
-RUN mkdir /runtimelab/samples/NativeLibrary/mod_export
+RUN mkdir /example/out
+RUN mkdir /example/mod_export
 
 
 CMD ./cc.sh
