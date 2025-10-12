@@ -10,7 +10,7 @@ compile-wasm: docker-build
 	./docker_compile.sh
 
 compile-rv64: docker-build
-	./docker_compile.sh
+	make -C zkvm firmware.zkvm.elf
 
 compile: compile-wasm compile-rv64
 
