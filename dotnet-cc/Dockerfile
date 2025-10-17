@@ -88,8 +88,6 @@ COPY nuget.config /example/nuget.config
 COPY Example.cs /example/Example.cs
 COPY Example.csproj /example/Example.csproj
 WORKDIR /example
-COPY hostfunc.c /example/hostfunc.c
-RUN /wasi-sdk-25.0-x86_64-linux/bin/wasm32-wasi-clang -static -o mylib.dll hostfunc.c
 RUN /dotnet10/dotnet publish -r wasi-wasm
 RUN wasm-tools component unbundle --module-dir mod --output Example.unbundled.wasm bin/Release/net10.0/wasi-wasm/publish/Example.wasm
 RUN mv mod/unbundled-module1.wasm mod/wasi_snapshot_preview1.wasm

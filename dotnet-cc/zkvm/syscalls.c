@@ -5,15 +5,8 @@
 
 #include "zkvm.h"
 
-#define RAM_START 0xa0a20000
-#define RAM_SIZE 0x1FFE0000
-
-#define HEAP_OFFSET 0x01000000 /* TODO */
-#define HEAP_START (RAM_START+HEAP_OFFSET)
-#define HEAP_SIZE (RAM_SIZE-HEAP_OFFSET)
-
 void writeuartc(const char c) {
-	char *ptr_val = (char *)(0xa0000000+512);
+	char *ptr_val = (volatile char *)(0xa0000000+512);
 	*ptr_val = c;
 }
 

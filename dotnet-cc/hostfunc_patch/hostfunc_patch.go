@@ -17,10 +17,16 @@ const (
 
 	memoryStr = `"memory"`
 
+	keywordFunc = "func"
 	keywordParam = "param"
+	keywordType = "type"
 
+	funcStartMatch = parOpen + keywordFunc
+	typeStartMatch = parOpen + keywordType
 	paramStartMatch = parOpen + keywordParam
 	exportMemoryMatch = parOpen + space + memoryStr
+
+	maxLineParseLen = 1000
 )
 
 func extractParams(t string) (params string) {
@@ -43,7 +49,7 @@ func Main(in, out string, funs []string) (err error) {
 	for scanner.Scan() {
 		for _, fun := range funs {
 			t := scanner.Text()
-			if strings.Contains(t, fun) && strings.Contains(t, paramStartMatch) {
+			if isFuncDecl(t, fun) {
 				log.Printf("found: %v", t)
 				params[fun] = extractParams(t)
 			}
@@ -78,6 +84,7 @@ func Main(in, out string, funs []string) (err error) {
 	w := bufio.NewWriter(fout)
 	for scanner.Scan() {
 		t := scanner.Text()
+		// Output with re-written function calls
 		if err := writeText(w, t, funs); err != nil {
 			return fmt.Errorf("write text: %w", err)
 		}
@@ -102,9 +109,27 @@ func Main(in, out string, funs []string) (err error) {
 	return
 }
 
+func isFuncDecl(txt, fun string) bool {
+	if !strings.HasPrefix(strings.TrimSpace(txt), funcStartMatch) {
+		return false
+	}
+
+	i := strings.Index(txt, fun)
+	if i < 0 {
+		return false
+	}
+	t := txt[i+len(fun):]
+
+	t = strings.TrimSpace(t)
+
+	matched := len(t) == 0 || strings.HasPrefix(t, paramStartMatch) || strings.HasPrefix(t, typeStartMatch)
+
+	return matched
+}
+
 func writeText(w *bufio.Writer, t string, funs []string) (err error) {
 	for _, fun := range funs {
-		if strings.Contains(t, "call $Example_Example_Example__"+fun) {
+		if strings.TrimSpace(t) == "call $Example_Example_Example__"+fun {
 			t = strings.Replace(t, "call $Example_Example_Example__"+fun, "call $Example_Example_Example__"+fun+"Overwrite", 1)
 		}
 	}

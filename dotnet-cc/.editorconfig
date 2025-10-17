@@ -1,0 +1,50 @@
+# Top-most EditorConfig file
+root = true
+
+# Apply settings to all C# files
+[*.cs]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+charset = utf-8
+trim_trailing_whitespace = true
+
+# --- C# code style preferences ---
+
+# Sort System.* and then other usings
+dotnet_sort_system_directives_first = true
+
+# Require braces for all control blocks
+csharp_prefer_braces = true:suggestion
+
+# Prefer 'var' only when obvious
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# Prefer explicit type names over 'var' for clarity
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+
+# Prefer expression-bodied members where simple
+csharp_style_expression_bodied_methods = true:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+
+# Prefer using 'is not null' for null checks
+csharp_style_prefer_is_not_expression = true:suggestion
+
+# Use 'this.' only when necessary
+dotnet_style_qualification_for_field = false:suggestion
+
+# Prefer file-scoped namespaces
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+# Prefer readonly struct when possible
+dotnet_style_readonly_struct = true:suggestion
+
+# --- Newline & spacing rules ---
+csharp_new_line_before_open_brace = all
+csharp_new_line_between_query_expression_clauses = true
+csharp_space_around_binary_operators = before_and_after

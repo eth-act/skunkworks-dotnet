@@ -1,9 +1,13 @@
 #include <stdio.h>
 
-void unbundledmodule0_customImports__hostFuncCallback(void*, int a, int b) {
-    printf("CUSTOM IMPORT(0x%x, 0x%x)\n", a, b);
+void unbundledmodule0_customImports__hostFuncPrintk(void* p, int b, int c) {
+    printf("printk(0x%x)\n", c);
 }
 
-void unbundledmodule0_customImports__printk(void* p, int b, int c) {
-    printf("PRINTK(0x%x)\n", c);
+int unbundledmodule0_customImports__hostFuncLenInputBuf(void* p, int b, int c) {
+	return 1;
+}
+
+int unbundledmodule0_customImports__hostFuncReadValue(void* p, int b, int c) {
+	return 'a';
 }

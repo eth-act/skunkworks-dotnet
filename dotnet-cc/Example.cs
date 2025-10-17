@@ -5,21 +5,6 @@ using System.Text;
 
 namespace Example
 {
-    public class TestCode {
-        public bool IsPrime(int number) {
-            if (number == 1) return false;
-            if (number == 2) return true;
-
-            if (number % 2 == 0) return false;
-
-            for (int i  = 2; i < number; i++) {
-                if (number % i == 0) return false;
-            }
-
-            return true;
-        }
-    }
-
     public unsafe class Example
     {
         [UnmanagedCallersOnly(EntryPoint = "Example_Free")]
@@ -28,52 +13,58 @@ namespace Example
             NativeMemory.Free(p);
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "Example_Triple")]
-        public static int Triple(int x)
-        {
-            Console.WriteLine("Triple()");
-            return 3*x;
+        // Host functions need to be wrapped within Unmanaged Code
+        // as this is the code which can be patched on a wasm level.
+        //
+        // The managed code on the other hand is compiled to dotnet
+        // byte code, and embedded as a binary blob.
+
+        private static unsafe extern void hostFuncPrintk(int a);
+
+        private static unsafe extern int hostFuncLenInputBuf();
+
+        private static unsafe extern int hostFuncReadValue(int i);
+
+        [UnmanagedCallersOnly(EntryPoint = "Example_hostFuncPrintkWrapper")]
+        private static void hostFuncPrintkWrapper(int a) {
+            hostFuncPrintk(a);
         }
 
-        [DllImport("mylib.dll")]
-        private static unsafe extern void hostFuncCallback(int a, int b);
+        [UnmanagedCallersOnly(EntryPoint = "Example_hostFuncLenInputBufWrapper")]
+        private static int hostFuncLenInputBufWrapper() {
+            return hostFuncLenInputBuf();
+        }
 
-        [DllImport("mylib.dll")]
-        private static unsafe extern void printk(int a);
+        [UnmanagedCallersOnly(EntryPoint = "Example_hostFuncReadValueWrapper")]
+        private static int hostFuncReadValueWrapper(int i) {
+            return hostFuncReadValue(i);
+        }
 
-        [UnmanagedCallersOnly(EntryPoint = "Example_NextPrime")]
-        public static int NextPrime(int x)
-        {
-            Console.WriteLine($"NextPrime({x})");
+        private static delegate* unmanaged<int> lenInputBuf = &hostFuncLenInputBufWrapper;
+        private static delegate* unmanaged<int, int> readValue = &hostFuncReadValueWrapper;
+        private static delegate* unmanaged<int, void> printk = &hostFuncPrintkWrapper;
 
-            var testCode = new TestCode();
-            for (int i = x; i < 1000; i++) {
-                if (testCode.IsPrime(i)) {
-                    return i;
-                }
+        private static byte[] inputData() {
+            int n = lenInputBuf();
+            byte[] result = new byte[n];
+
+            for (int i = 0; i < n; i++) {
+                result[i] = (byte) readValue(i);
             }
 
-            return 0;
+            return result;
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "Example_TestCallingHostFunc")]
-        public static void TestCallingHostFunc()
+        [UnmanagedCallersOnly(EntryPoint = "Example_Run")]
+        public static void Run()
         {
-            Console.WriteLine("TestCallingHostFunc()\n");
+            Console.WriteLine("Run()");
 
-			// Test host func callback
-            hostFuncCallback(0x456000, 0x789);
-        }
-
-        [UnmanagedCallersOnly(EntryPoint = "Example_CalculateHash")]
-        public static void CalculateHash()
-        {
-            Console.WriteLine("get bytes:");
-            byte[] bytes = Encoding.Unicode.GetBytes("example text");
-            Console.WriteLine("create sha256 instance:");
-            var sha256 = SHA256.Create();
-            Console.WriteLine("compute hash:");
-            var hash = sha256.ComputeHash(bytes);
+            Console.WriteLine($"input data: {Encoding.UTF8.GetString(inputData())}");
+            Console.WriteLine("input data byte representation:");
+            foreach (byte b in inputData()) {
+                printk(b);
+            }
         }
     }
 }

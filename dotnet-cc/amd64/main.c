@@ -35,16 +35,7 @@ int main(int argc, char* argv[]) {
         printf("instantiale module0...\n");
         unbundledmodule0Instantiate(&instance0, NULL);
 
-        printf("start Triple(4.03)...\n");
-        double y = unbundledmodule0_Example_Triple(&instance0, 4.03);
-        printf("y=%f\n", y);
-
-        printf("nextPrime(32)...\n");
-        int yy = unbundledmodule0_Example_NextPrime(&instance0, 32);
-        printf("yy=%d\n", yy);
-
-        //printf("CalculateHash()...\n");
-        //unbundledmodule0_Example_CalculateHash(&instance0);
+        unbundledmodule0_Example_Run(&instance0);
 
         unbundledmodule0FreeInstance(&instance0);
     }
