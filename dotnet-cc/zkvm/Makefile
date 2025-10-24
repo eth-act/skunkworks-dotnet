@@ -30,4 +30,5 @@ clean:
 	rm -f $(OBJS) firmware.elf firmware.zkvm.elf qemu_debug.log mod0.c mod0.h *.o
 
 debug_zkvm: firmware.zkvm.elf
-	ziskemu -e ./firmware.zkvm.elf -i testinput.txt
+	ziskemu -e ./firmware.zkvm.elf -i riscv.bmp
+	#ziskemu -e ./firmware.zkvm.elf -i testinput.txt

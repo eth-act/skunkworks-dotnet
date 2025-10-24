@@ -161,4 +161,6 @@ because of a mismatch between sync and async APIs on Browser platforms. (Why sho
 
 - https://github.com/dotnet/runtime/issues/82472
 
+Bouncycastle can be used though.
+
 ### tbd

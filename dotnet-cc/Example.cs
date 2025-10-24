@@ -1,7 +1,13 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+
+using Org.BouncyCastle.Crypto.Digests;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Example
 {
@@ -55,15 +61,76 @@ namespace Example
             return result;
         }
 
+        public void asciiImage() {
+            Console.WriteLine("asciiImage: read image...");
+            var newWidth = 80;
+            using var image = Image.Load<Rgba32>(inputData());
+
+            int newHeight = (int)(image.Height / (double)image.Width * newWidth * 0.5);
+            image.Mutate(x => x.Resize(newWidth, newHeight));
+
+            string chars = "@%#*+=-:. ";
+
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    var pixel = image[x, y];
+                    int gray = (int)(0.2126 * pixel.R + 0.7152 * pixel.G + 0.0722 * pixel.B);
+                    int index = (gray * (chars.Length - 1)) / 255;
+                    Console.Write(chars[index]);
+                }
+                Console.Write('\n');
+            }
+        }
+
+        static void HashTest()
+        {
+            var input = inputData();
+            Sha256Digest digest = new Sha256Digest(); // 256-bit output
+            digest.BlockUpdate(input, 0, input.Length);
+            byte[] result = new byte[digest.GetDigestSize()];
+            digest.DoFinal(result, 0);
+
+            string hashHex = BitConverter.ToString(result).Replace("-", "").ToLowerInvariant();
+            Console.WriteLine($"sha256 of input data:: {hashHex}");
+        }
+
+        public void memoryTest() {
+            // 180 MB allocated through wasmAllocate
+            // 512 MB in principle available from ziskemu
+            Console.WriteLine("test filling up memory...\n");
+
+            int memChunkSz = 1024*1024;
+            int numChunks = 180;
+            byte[][] memChunks = new byte[numChunks][];
+            var j = 0;
+            for (var i = 1; i <= numChunks; i++)
+            {
+                memChunks[i-1] = new byte[memChunkSz];
+                if (i % 10 == 0)
+                {
+                    Console.WriteLine($"mem test: filled up {i} MB...");
+                }
+            }
+        }
+
         [UnmanagedCallersOnly(EntryPoint = "Example_Run")]
         public static void Run()
         {
-            Console.WriteLine("Run()");
+            var example = new Example();
+            example.memoryTest();
+            GC.Collect();
+            example.memoryTest();
+            GC.Collect();
 
-            Console.WriteLine($"input data: {Encoding.UTF8.GetString(inputData())}");
-            Console.WriteLine("input data byte representation:");
-            foreach (byte b in inputData()) {
-                printk(b);
+            HashTest();
+
+            bool isBmp = inputData().Length >= 2 && inputData()[0] == 0x42 && inputData()[1] == 0x4D;
+            if (isBmp)
+            {
+                Console.WriteLine("bmp image detected:");
+                example.asciiImage();
             }
         }
     }

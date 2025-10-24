@@ -35,8 +35,33 @@ U32 wasisnapshotpreview1_fd_fdstat_get(void* i, U32 l0, U32 l1) {
 	return 0;
 }
 
+U32 wasisnapshotpreview1_fd_filestat_get(void*, U32, U32) {
+	printf("wasisnapshotpreview1_fd_filestat_get\n");
+	return 0;
+}
+
+U32 wasisnapshotpreview1_fd_pread(void*, U32, U32, U32, U64, U32) {
+	printf("wasisnapshotpreview1_fd_pread\n");
+	return 0;
+}
+
+U32 wasisnapshotpreview1_fd_read(void*, U32, U32, U32, U32) {
+	printf("wasisnapshotpreview1_fd_read\n");
+	return 0;
+}
+
 U32 wasisnapshotpreview1_path_filestat_get(void* i, U32 l0, U32 l1, U32 l2, U32 l3, U32 l4) {
 	printf("wasisnapshotpreview1_path_filestat_get\n");
+	return 0;
+}
+
+U32 wasisnapshotpreview1_path_open(void*, U32, U32, U32, U32, U32, U64, U64, U32, U32) {
+	printf("wasisnapshotpreview1_path_open\n");
+	return 0;
+}
+
+U32 wasisnapshotpreview1_path_readlink(void*, U32, U32, U32, U32, U32, U32) {
+	printf("wasisnapshotpreview1_path_readlink\n");
 	return 0;
 }
 
@@ -70,6 +95,16 @@ U32 wasisnapshotpreview1_clock_time_get(void* i, U32 l0, U64 l1, U32 l2) {
 	return 0;
 }
 
+U32 wasisnapshotpreview1_fd_advise(void*, U32, U64, U64, U32) {
+	printf("wasisnapshotpreview1_fd_advise\n");
+	return 0;
+}
+
+U32 wasisnapshotpreview1_fd_readdir(void*, U32, U32, U32, U64, U32) {
+	printf("wasisnapshotpreview1_fd_seek\n");
+	return 0;
+}
+
 U32 wasisnapshotpreview1_fd_seek(void* i, U32 l0, U64 l1, U32 l2, U32 l3) {
 	printf("wasisnapshotpreview1_fd_seek\n");
 	return 0;
@@ -94,7 +129,7 @@ U32 wasisnapshotpreview1_fd_write(void* i, U32 wasiFD, U32 ciovecsPointer, U32 c
 	wasmMemory* memory = wasiMemory(i);
 	struct iovec* iovecs = NULL;
 	I64 total = 0;
-	printf("wasisnapshotpreview1_fd_write\n");
+	/* printf("wasisnapshotpreview1_fd_write\n"); */
 
 	iovecs = malloc(ciovecsCount * sizeof(struct iovec));
 	if (iovecs == NULL) {
@@ -110,7 +145,7 @@ U32 wasisnapshotpreview1_fd_write(void* i, U32 wasiFD, U32 ciovecsPointer, U32 c
 			U32 bufferPointer = i32_load(memory, ciovecPointer);
 			U32 length = i32_load(memory, ciovecPointer + 4);
 
-			printf("length = %d\n", length);
+			/* printf("length = %d\n", length); */
 
 			iovecs[ciovecIndex].iov_base = memory->data + bufferPointer;
 			iovecs[ciovecIndex].iov_len = length;
