@@ -18,7 +18,9 @@
 #define HEAP_SIZE (RAM_SIZE-HEAP_OFFSET)
 
 void printk(uint32_t val);
+void shutdown();
 U64 len_input_buf();
 char read_value(U64* i, U64 a, U64 b);
 
 #endif
+

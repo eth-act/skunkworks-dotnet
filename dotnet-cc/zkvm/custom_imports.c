@@ -17,3 +17,9 @@ int unbundledmodule0_customImports__hostFuncReadValue(U64* p, U64 b, U64 c) {
 	int result = read_value(p, b, c);
 	return result;
 }
+
+void unbundledmodule0_customImports__hostFuncShutdown(U64* p) {
+	printf("shutdown()\n");
+	shutdown();
+}
+

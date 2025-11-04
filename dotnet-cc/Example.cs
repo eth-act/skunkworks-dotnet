@@ -31,6 +31,8 @@ namespace Example
 
         private static unsafe extern int hostFuncReadValue(int i);
 
+        private static unsafe extern void hostFuncShutdown();
+
         [UnmanagedCallersOnly(EntryPoint = "Example_hostFuncPrintkWrapper")]
         private static void hostFuncPrintkWrapper(int a) {
             hostFuncPrintk(a);
@@ -46,9 +48,15 @@ namespace Example
             return hostFuncReadValue(i);
         }
 
+        [UnmanagedCallersOnly(EntryPoint = "Example_hostFuncShutdownWrapper")]
+        private static void hostFuncShutdownWrapper() {
+            hostFuncShutdown();
+        }
+
         private static delegate* unmanaged<int> lenInputBuf = &hostFuncLenInputBufWrapper;
         private static delegate* unmanaged<int, int> readValue = &hostFuncReadValueWrapper;
         private static delegate* unmanaged<int, void> printk = &hostFuncPrintkWrapper;
+        private static delegate* unmanaged<void> shutdown = &hostFuncShutdownWrapper;
 
         private static byte[] inputData() {
             int n = lenInputBuf();

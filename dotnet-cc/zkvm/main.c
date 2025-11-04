@@ -71,5 +71,7 @@ int main(void) {
 
 	unbundledmodule0FreeInstance(&instance0);
 
+	printk(0x1000);
+
 	shutdown();
 }
