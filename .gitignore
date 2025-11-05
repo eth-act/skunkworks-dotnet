@@ -1,4 +1,9 @@
 /dotnet-cc/mod_export
 /dotnet-cc/out
+*.bin
+*.log
+*.o
 *.wat
+mod0.c
+mod0.h
 

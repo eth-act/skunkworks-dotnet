@@ -31,33 +31,24 @@ git clone https://github.com/turbolent/w2c2.git
 
 ## Building
 
-### Build and run Everything
+### Build and run basic example
 
 
 ```
 make all
 ```
 
-#### With custom input file
+#### Run example
 
 ```
-cd dotnet-cc
-make -C zkvm firmware.zkvm.elf
-ziskemu -e ./zkvm/firmware.zkvm.elf -i test_input.dat
+cd dotnet-cc/examples/basic
+make
 ```
-
-### Step-by-step calls
 
 #### Build docker image
 
 ```
 ./docker_build.sh
-```
-
-#### Export artifacts and compile for amd64
-
-```
-./docker_compile.sh
 ```
 
 #### Interactively start docker image
@@ -66,7 +57,6 @@ Useful for debugging and checking the intermediate result
 
 ```
 ./docker_run.sh
-./cc.sh
 ./a.out
 ```
 

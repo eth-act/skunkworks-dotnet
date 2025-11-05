@@ -81,13 +81,10 @@ RUN cargo build
 ### C# to wasm conversion ###
 
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-RUN mkdir /example
 COPY nuget.pem /etc/pki/ca-trust/source/anchors/nuget.pem
 RUN update-ca-trust extract
-COPY nuget.config /example/nuget.config
-COPY Example.cs /example/Example.cs
-COPY Example.csproj /example/Example.csproj
-WORKDIR /example
+COPY examples /examples
+WORKDIR /examples/basic
 RUN /dotnet10/dotnet publish -r wasi-wasm
 RUN wasm-tools component unbundle --module-dir mod --output Example.unbundled.wasm bin/Release/net10.0/wasi-wasm/publish/Example.wasm
 RUN mv mod/unbundled-module1.wasm mod/wasi_snapshot_preview1.wasm
@@ -95,39 +92,29 @@ RUN mv mod/unbundled-module1.wasm mod/wasi_snapshot_preview1.wasm
 
 ### Hostfunc import
 
-RUN mkdir -p /example/hostfunc_patch
-COPY ./hostfunc_patch.sh /example/hostfunc_patch.sh
-COPY ./hostfunc_patch/hostfunc_patch.go /example/hostfunc_patch/hostfunc_patch.go
+COPY ./hostfunc_patch /hostfunc_patch
 RUN cp mod/unbundled-module0.wasm mod/unbundled-module0-unpatched.wasm
 RUN /wabt/bin/wasm2wat mod/unbundled-module0.wasm > mod/unbundled-module0-patched.wat
-RUN ./hostfunc_patch.sh /example/hostfunc_patch.sh
-WORKDIR /example/mod
-COPY amd64/custom_imports.c /example/mod/custom_imports.c
-RUN gcc -g -c custom_imports.c
+RUN /hostfunc_patch/hostfunc_patch.sh
+WORKDIR /examples/basic/mod
+COPY amd64/custom_imports.c /amd64/custom_imports.c
+RUN gcc -g -c /amd64/custom_imports.c
 
 
 ### wasm to C conversion ###
 
-WORKDIR /example
+COPY amd64 /amd64
+COPY zkvm /zkvm
+COPY common /common
+WORKDIR /examples/basic
 RUN w2c2 -p -m mod/unbundled-module0.wasm mod/mod0.c
-WORKDIR /example/mod
-COPY zkvm/custom_shims.h /example/mod/custom_shims.h
-RUN gcc -g -include custom_shims.h -c mod0.c -D AMD64 -I/w2c2/w2c2
-COPY amd64/addon.c /example/mod/addon.c
-COPY amd64/main.c /example/mod/main.c
-COPY zkvm/wasi.c /example/mod/wasi.c
-COPY zkvm/stubs.c /example/mod/stubs.c
-RUN gcc -g -c addon.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
-RUN gcc -g -c stubs.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
-RUN gcc -g -c main.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
-RUN gcc -g -c wasi.c -D AMD64 -I/w2c2/w2c2
-WORKDIR /example
-COPY amd64/cc.sh /example/cc.sh
+WORKDIR /examples/basic/mod
+RUN gcc -g -include /common/custom_shims.h -c mod0.c -D AMD64 -I/w2c2/w2c2
+RUN gcc -g -c /amd64/addon.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
+RUN gcc -g -c /common/stubs.c -D AMD64 -I. -I/w2c2/w2c2 -I/w2c2/wasi
+RUN gcc -g -c /amd64/main.c -D AMD64 -I. -I/w2c2/w2c2 -I/w2c2/wasi
+RUN gcc -g -c /common/wasi.c -D AMD64 -I. -I/w2c2/w2c2
+WORKDIR /examples/basic
+RUN /amd64/cc.sh
 
-
-RUN mkdir /example/out
-RUN mkdir /example/mod_export
-
-
-CMD ./cc.sh
-
+CMD tail -f /dev/null
