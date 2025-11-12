@@ -1,0 +1,141 @@
+name: Test build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # Use hosted tool cache since rebuilds take a significant amount
+  # of time. Caching based on pinned nightly version.
+  #
+  # Custom builds are necessary because the required target config
+  # isn't enabled by default.
+  test-build:
+    runs-on: ubuntu-24.04
+    env:
+      RISCV_GNU_TOOLCHAIN_DIR: "/opt/riscv-gnu-toolchain"
+      RISCV_GNU_TOOLCHAIN_TAG: "2025.11.04"
+      DOTNET_DIR: "/opt/dotnet10"
+      DOTNET_VERSION: "10.0.100"
+      W2C2_DIR: "/opt/w2c2"
+      W2C2_TAG: 2a31254683de4a3f6a750c123daa7ddf97631c69
+      WASI_SDK_PATH: "/opt/wasi-sdk-25.0-x86_64-linux"
+      WASI_SDK_VERSION: "25.0"
+      WASM_TOOLS_DIR: "/opt/wasm-tools-1.236.0-x86_64-linux"
+      WASM_TOOLS_VERSION: "1.236.0"
+      ZISK_DIR: "/opt/zisk"
+      ZISK_VERSION: "v0.13.0"
+    steps:
+      - name: clone repository
+        uses: actions/checkout@v5
+
+      - name: Restore RISC-V GNU toolchain from cache
+        id: risc-v-gnu-cache-task
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.RISCV_GNU_TOOLCHAIN_DIR }}
+          key: "riscv-gnu-toolchain-${{ env.RISCV_GNU_TOOLCHAIN_TAG }}"
+
+      - if: ${{ steps.risc-v-gnu-cache-task.outputs.cache-hit != 'true' }}
+        name: Install RISC-V GNU toolchain
+        run: |
+          git clone --depth 1 https://github.com/riscv/riscv-gnu-toolchain --branch $RISCV_GNU_TOOLCHAIN_TAG
+          cd riscv-gnu-toolchain
+          pwd
+          ls
+          ./configure --prefix=$RISCV_GNU_TOOLCHAIN_DIR --with-arch=rv64ima --disable-gdb --with-cmodel=medany
+          make -j 8
+
+      - name: output RISC-V GNU toolchain version
+        run: |
+          $RISCV_GNU_TOOLCHAIN_DIR/bin/riscv64-unknown-elf-gcc -v
+
+      - name: Restore dotnet from cache
+        id: dotnet-cache-task
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.DOTNET_DIR }}
+          key: "dotnet-${{ env.DOTNET_VERSION }}"
+
+      - if: ${{ steps.dotnet-cache-task.outputs.cache-hit != 'true' }}
+        name: Install dotnet 10
+        run: |
+          mkdir $DOTNET_DIR
+          wget https://builds.dotnet.microsoft.com/dotnet/Sdk/$DOTNET_VERSION/dotnet-sdk-$DOTNET_VERSION-linux-x64.tar.gz
+          tar xf dotnet-sdk-$DOTNET_VERSION-linux-x64.tar.gz -C $DOTNET_DIR
+
+      - name: output dotnet version
+        run: |
+          $DOTNET_DIR/dotnet --version
+
+      - name: Restore w2c2 from cache
+        id: w2c2-cache-task
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.W2C2_DIR }}
+          key: "w2c2-${{ env.W2C2_TAG }}"
+
+      - if: ${{ steps.w2c2-cache-task.outputs.cache-hit != 'true' }}
+        name: Install w2c2
+        run: |
+          git clone https://github.com/turbolent/w2c2.git $W2C2_DIR
+          cd $W2C2_DIR
+          git checkout $W2C2_TAG
+          cmake -B build
+          cmake --build build
+          cd $W2C2_DIR/wasi
+          cmake -B build
+          cmake --build build
+
+      - name: Restore wasi sdk from cache
+        id: wasi-sdk-cache-task
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WASI_SDK_PATH }}
+          key: "wasi-sdk-${{ env.WASI_SDK_VERSION }}"
+
+      - if: ${{ steps.wasi-sdk-cache-task.outputs.cache-hit != 'true' }}
+        name: Install WASI SDK
+        run: |
+          wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-$WASI_SDK_VERSION-x86_64-linux.tar.gz
+          tar xf wasi-sdk-$WASI_SDK_VERSION-x86_64-linux.tar.gz -C /opt
+
+      - name: Restore wasm-tools from cache
+        id: wasm-tools-cache-task
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WASM_TOOLS_DIR }}
+          key: "wasm-tools-${{ env.WASM_TOOLS_VERSION }}"
+
+      - if: ${{ steps.wasm-tools-cache-task.outputs.cache-hit != 'true' }}
+        name: Install wasm-tools
+        run: |
+          wget https://github.com/bytecodealliance/wasm-tools/releases/download/v1.236.0/wasm-tools-$WASM_TOOLS_VERSION-x86_64-linux.tar.gz
+          tar xf wasm-tools-$WASM_TOOLS_VERSION-x86_64-linux.tar.gz -C /opt
+
+      - name: Restore zisk from cache
+        id: zisk-cache-task
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ZISK_DIR }}
+          key: "zisk-${{ env.ZISK_VERSION }}"
+
+      - if: ${{ steps.zisk-cache-task.outputs.cache-hit != 'true' }}
+        name: Install zisk
+        run: |
+          mkdir $ZISK_DIR
+          cd $ZISK_DIR
+          wget https://github.com/0xPolygonHermez/zisk/releases/download/$ZISK_VERSION/cargo_zisk_linux_amd64.tar.gz
+          tar xf cargo_zisk_linux_amd64.tar.gz
+
+      - name: build empty example
+        run: |
+          sudo apt-get install -y xz-utils jq curl build-essential qemu-system libomp-dev libgmp-dev nlohmann-json3-dev protobuf-compiler uuid-dev libgrpc++-dev libsecp256k1-dev libsodium-dev libpqxx-dev nasm libopenmpi-dev openmpi-bin openmpi-common wabt
+          sudo cp $GITHUB_WORKSPACE/dotnet-cc/nuget.pem /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+          cd $GITHUB_WORKSPACE/dotnet-cc/examples/empty
+          $DOTNET_DIR/dotnet publish -r wasi-wasm
+          $WASM_TOOLS_DIR/wasm-tools component unbundle --module-dir mod --output Example.unbundled.wasm bin/Release/net10.0/wasi-wasm/publish/Example.wasm
+          $GITHUB_WORKSPACE/dotnet-cc/hostfunc_patch/hostfunc_patch.sh
+          /opt/w2c2/build/w2c2/w2c2 -p -m mod/unbundled-module0.wasm mod/mod0.c
+          cp mod/mod0.c mod/mod0.h .
+          PREFIX=$RISCV_GNU_TOOLCHAIN_DIR/bin/riscv64-unknown-elf- ZISKEMU=$ZISK_DIR/bin/ziskemu make run

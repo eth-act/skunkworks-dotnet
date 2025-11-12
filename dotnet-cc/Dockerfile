@@ -23,8 +23,8 @@ ENV WASI_SDK_PATH=/wasi-sdk-25.0-x86_64-linux
 WORKDIR /
 RUN mkdir /dotnet10
 WORKDIR /dotnet10
-RUN wget https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.100-rc.1.25451.107/dotnet-sdk-10.0.100-rc.1.25451.107-linux-x64.tar.gz
-RUN tar xf dotnet-sdk-10.0.100-rc.1.25451.107-linux-x64.tar.gz
+RUN wget https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.100/dotnet-sdk-10.0.100-linux-x64.tar.gz
+RUN tar xf dotnet-sdk-10.0.100-linux-x64.tar.gz
 RUN ls /dotnet10
 
 
@@ -65,6 +65,7 @@ RUN mkdir /wabt/build
 WORKDIR /wabt/build
 RUN cmake ..
 RUN cmake --build .
+ENV PATH=$PATH:/wabt/bin
 
 
 ### Setup wasmtime ###
@@ -87,18 +88,12 @@ COPY examples /examples
 WORKDIR /examples/basic
 RUN /dotnet10/dotnet publish -r wasi-wasm
 RUN wasm-tools component unbundle --module-dir mod --output Example.unbundled.wasm bin/Release/net10.0/wasi-wasm/publish/Example.wasm
-RUN mv mod/unbundled-module1.wasm mod/wasi_snapshot_preview1.wasm
 
 
 ### Hostfunc import
 
 COPY ./hostfunc_patch /hostfunc_patch
-RUN cp mod/unbundled-module0.wasm mod/unbundled-module0-unpatched.wasm
-RUN /wabt/bin/wasm2wat mod/unbundled-module0.wasm > mod/unbundled-module0-patched.wat
 RUN /hostfunc_patch/hostfunc_patch.sh
-WORKDIR /examples/basic/mod
-COPY amd64/custom_imports.c /amd64/custom_imports.c
-RUN gcc -g -c /amd64/custom_imports.c
 
 
 ### wasm to C conversion ###
@@ -106,13 +101,13 @@ RUN gcc -g -c /amd64/custom_imports.c
 COPY amd64 /amd64
 COPY zkvm /zkvm
 COPY common /common
-WORKDIR /examples/basic
 RUN w2c2 -p -m mod/unbundled-module0.wasm mod/mod0.c
 WORKDIR /examples/basic/mod
 RUN gcc -g -include /common/custom_shims.h -c mod0.c -D AMD64 -I/w2c2/w2c2
 RUN gcc -g -c /amd64/addon.c -D AMD64 -I/w2c2/w2c2 -I/w2c2/wasi
-RUN gcc -g -c /common/stubs.c -D AMD64 -I. -I/w2c2/w2c2 -I/w2c2/wasi
+RUN gcc -g -c /amd64/custom_imports.c
 RUN gcc -g -c /amd64/main.c -D AMD64 -I. -I/w2c2/w2c2 -I/w2c2/wasi
+RUN gcc -g -c /common/stubs.c -D AMD64 -I. -I/w2c2/w2c2 -I/w2c2/wasi
 RUN gcc -g -c /common/wasi.c -D AMD64 -I. -I/w2c2/w2c2
 WORKDIR /examples/basic
 RUN /amd64/cc.sh

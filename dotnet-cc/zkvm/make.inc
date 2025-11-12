@@ -1,5 +1,6 @@
-PREFIX = /opt/riscv-newlib/bin/riscv64-unknown-elf-
+PREFIX ?= /opt/riscv-newlib/bin/riscv64-unknown-elf-
 W2C2_ROOT=/opt/w2c2/w2c2
+ZISKEMU ?= ziskemu
 
 CC = $(PREFIX)gcc
 AS = $(PREFIX)as
