@@ -1,7 +1,6 @@
 name: Test build
 
-on:
-  workflow_dispatch:
+on: [push]
 
 jobs:
   # Use hosted tool cache since rebuilds take a significant amount
