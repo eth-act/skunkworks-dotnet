@@ -6,7 +6,8 @@ CC = $(PREFIX)gcc
 AS = $(PREFIX)as
 LD = $(PREFIX)ld
 
-CFLAGS = -Wall -fstack-protector-strong -fno-omit-frame-pointer -march=rv64ima -mabi=lp64 -mcmodel=medany -specs=nosys.specs -include custom_shims.h -I../../common -I../../zkvm -I./include -I. -I$(W2C2_ROOT) -D__bool_true_false_are_defined
+CFLAGS_EXTRA ?= -O0 -fstack-protector-strong -fno-omit-frame-pointer
+CFLAGS = $(CFLAGS_EXTRA) -Wall -march=rv64ima -mabi=lp64 -mcmodel=medany -specs=nosys.specs -include custom_shims.h -I../../common -I../../zkvm -I./include -I. -I$(W2C2_ROOT) -D__bool_true_false_are_defined
 LDFLAGS_ZKVM = -march=rv64ima -mabi=lp64 -T ../../zkvm/riscv64ima_zisk_zkvm_elf_linker_script.ld -nostartfiles -lm
 
 %.bin: $(OBJS_ZKVM) ../../zkvm/riscv64ima_zisk_zkvm_elf_linker_script.ld
